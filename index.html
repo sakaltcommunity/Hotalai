@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>架空言語生成</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    #output {
+      margin-top: 20px;
+      font-size: 24px;
+      font-weight: bold;
+    }
+    textarea {
+      width: 80%;
+      height: 100px;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>架空言語生成</h1>
+
+  <textarea id="inputText" placeholder="日本語を入力してください..."></textarea>
+  <br>
+  <button onclick="generateText()">生成</button>
+
+  <div id="output"></div>
+
+  <script>
+    let wordsData = [];
+
+    // JSONデータをfetchで読み込む
+    fetch('words.json')
+      .then(response => response.json())
+      .then(data => {
+        wordsData = data.words;
+      })
+      .catch(error => console.error('Error loading JSON:', error));
+
+    // 架空言語を生成する関数
+    function generateText() {
+      const inputText = document.getElementById('inputText').value; // ユーザーが入力したテキストを取得
+      let generatedText = '';
+
+      let wordsArray = inputText.split(' '); // 入力されたテキストをスペースで分割
+      for (let word of wordsArray) {
+        let matchedWord = wordsData.find(w => w.word === word);
+        if (matchedWord) {
+          // 架空言語を生成（重みを考慮して選択）
+          generatedText += matchedWord.fiction + " ";
+        } else {
+          // 架空言語にマッチしない場合はそのまま日本語
+          generatedText += word + " ";
+        }
+      }
+
+      // 結果を表示
+      document.getElementById('output').innerText = generatedText.trim();
+    }
+  </script>
+
+</body>
+</html>
