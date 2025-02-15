@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>架空言語生成</title>
+  <title>架空言語生成AI</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -28,44 +28,53 @@
 </head>
 <body>
 
-  <h1>架空言語生成</h1>
+  <h1>架空言語生成AI</h1>
 
   <textarea id="inputText" placeholder="日本語を入力してください..."></textarea>
   <br>
-  <button onclick="generateText()">生成</button>
+  <button onclick="generateFictionalLanguage()">生成</button>
 
   <div id="output"></div>
 
   <script>
-    let wordsData = [];
+    async function loadFictionalWords() {
+      const response = await fetch('fictional_words.json');
+      const data = await response.json();
+      return data.words;
+    }
 
-    // JSONデータをfetchで読み込む
-    fetch('words.json')
-      .then(response => response.json())
-      .then(data => {
-        wordsData = data.words;
-      })
-      .catch(error => console.error('Error loading JSON:', error));
+    // 架空言語を生成する関数（推論型）
+    async function generateFictionalLanguage() {
+      const inputText = document.getElementById('inputText').value;
+      const fictionalWords = await loadFictionalWords();
+      let result = '';
+      
+      // 文章を単語ごとに分割
+      const words = inputText.split(' ');
+      
+      // それぞれの単語に対して推論を行う
+      words.forEach(word => {
+        let bestMatch = null;
+        let highestWeight = 0;
 
-    // 架空言語を生成する関数
-    function generateText() {
-      const inputText = document.getElementById('inputText').value; // ユーザーが入力したテキストを取得
-      let generatedText = '';
+        // 各単語に対応する架空言語を推論
+        fictionalWords.forEach(fiction => {
+          if (word.includes(fiction.word)) { // その単語が含まれていれば、重みを加味して推論
+            if (fiction.weight > highestWeight) {
+              bestMatch = fiction.fictional;
+              highestWeight = fiction.weight;
+            }
+          }
+        });
 
-      let wordsArray = inputText.split(' '); // 入力されたテキストをスペースで分割
-      for (let word of wordsArray) {
-        let matchedWord = wordsData.find(w => w.word === word);
-        if (matchedWord) {
-          // 架空言語を生成（重みを考慮して選択）
-          generatedText += matchedWord.fiction + " ";
+        if (bestMatch) {
+          result += bestMatch + ' ';
         } else {
-          // 架空言語にマッチしない場合はそのまま日本語
-          generatedText += word + " ";
+          result += word + ' '; // 見つからなければそのまま日本語を表示
         }
-      }
+      });
 
-      // 結果を表示
-      document.getElementById('output').innerText = generatedText.trim();
+      document.getElementById('output').innerText = result.trim();
     }
   </script>
 
